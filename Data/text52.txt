@@ -1,0 +1,3 @@
+To move your character around the screen, use the arrow keys. ª
+Press F5 to save your game in progress. ª
+Press ESC to exit the game early. œ

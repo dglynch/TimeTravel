@@ -1,0 +1,154 @@
+//JACK V2.00 scene description, by Microsoft Liquid Motion
+{
+numFiles 1
+dnx.jack.Page
+{
+	minCapacity 20
+	behaviors
+	{
+		count 0
+	}
+	members
+	{
+		count 1
+		dnx.jack.Scene
+		{
+			minCapacity 25
+			behaviors
+			{
+				count 0
+			}
+			members
+			{
+				count 1
+				dnx.jack.TextSequence
+				{
+					minCapacity 33
+					behaviors
+					{
+						count 2
+						dnx.jack.behaviors.Pulsate
+						{
+							minCapacity 17
+							"LocalExtent" {0.0 0.0 0.0 -1.0 -1.0 -1.0}
+							"TimeFilter" {1.0 0.0 0.1}
+							"Name" "Grow"
+							"Comment" ""
+							"StartBase" 0
+							"TimeOffset" 0
+							"NaturalDuration" 10000
+							"UserDuration" 0
+							"PlayForward" 1
+							"AutoReverse" 0
+							"Loop" 0
+							"LoopCount" 0.0
+							"StartHold" 0
+							"EndHold" 0
+							"EditorName" null
+							"Initial Scale" 0.5
+							"Final Scale" 2.0
+						}
+						dnx.jack.behaviors.Spin
+						{
+							minCapacity 18
+							"LocalExtent" {0.0 0.0 0.0 -1.0 -1.0 -1.0}
+							"TimeFilter" {1.0 0.0 0.1}
+							"Name" "Spin"
+							"Comment" ""
+							"StartBase" 0
+							"TimeOffset" 0
+							"NaturalDuration" 10000
+							"UserDuration" 0
+							"PlayForward" 1
+							"AutoReverse" 0
+							"Loop" 0
+							"LoopCount" 0.0
+							"StartHold" 0
+							"EndHold" 2147483647
+							"EditorName" null
+							"Spin Clockwise" 1
+							"X Center" 0.0
+							"Y Center" 0.0
+						}
+					}
+					"LocalExtent" {-110.0 -25.5 0.0 220.0 51.0 0.0}
+					"TimeFilter" {1.0 0.0 0.0}
+					"Name" "Text"
+					"Comment" null
+					"StartBase" 0
+					"TimeOffset" 0
+					"NaturalDuration" 2147483647
+					"UserDuration" 0
+					"PlayForward" 1
+					"AutoReverse" 0
+					"Loop" 0
+					"LoopCount" 0.0
+					"StartHold" 0
+					"EndHold" 0
+					"EditorName" null
+					"ModelingMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+					"ScaleShearMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+					"RotationMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+					"TranslationMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+					"Text" "Time Travel"
+					"FontName" "TimesRoman"
+					"FontSize" 30
+					"FontBold" 1
+					"FontItalic" 0
+					"TextColor" x0000ff
+					"DropshadowColor" x000080
+					"BackgroundColor" x000000
+					"TextAlign" 0
+					"DropshadowHOffest" 2
+					"DropshadowVOffest" 2
+					"HMargin" 2
+					"VMargin" 2
+				}
+			}
+			"LocalExtent" {-400.0 -300.0 0.0 800.0 600.0 0.0}
+			"TimeFilter" {1.0 0.0 0.0}
+			"Name" "scene"
+			"Comment" ""
+			"StartBase" 0
+			"TimeOffset" 0
+			"NaturalDuration" 10000
+			"UserDuration" 0
+			"PlayForward" 1
+			"AutoReverse" 0
+			"Loop" 0
+			"LoopCount" 0.0
+			"StartHold" 0
+			"EndHold" 0
+			"EditorName" null
+			"ModelingMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+			"ScaleShearMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+			"RotationMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+			"TranslationMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+			"BackgroundColor" x000000
+			"BackgroundImage" noFile
+			"TileBackground" 0
+			"TilePadding" 0
+			"isDHTML" <4 6> 1
+		}
+	}
+	"LocalExtent" {0.0 0.0 0.0 -1.0 -1.0 -1.0}
+	"TimeFilter" {1.0 0.0 0.0}
+	"Name" "Page"
+	"Comment" ""
+	"StartBase" 0
+	"TimeOffset" 0
+	"NaturalDuration" 2147483647
+	"UserDuration" 0
+	"PlayForward" 1
+	"AutoReverse" 0
+	"Loop" 0
+	"LoopCount" 0.0
+	"StartHold" 0
+	"EndHold" 0
+	"EditorName" null
+	"ModelingMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+	"ScaleShearMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+	"RotationMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+	"TranslationMatrix"  (511) [ 1 0 0 0; 0 1 0 0; 0 0 1 0 ]
+}
+}

@@ -1,0 +1,542 @@
+// include header files
+#include <stdio.h>
+#include <conio.h>
+#include <allegro.h>
+#include <time.h>
+#include <string.h>
+#include "time.h"
+
+// heights of the map sprites
+const int HEIGHT[] = {50, 27, 32, 29};
+
+// variables for timers
+volatile int speed = 0;
+volatile int move = 0;
+
+// prototype functions
+char menu(void);
+int speed_test(void);
+void title_screen(void);
+void new_game(void);
+void old_game(void);
+void instructions(void);
+void credits(void);
+void game(void);
+int new_area(int, int, double, double);
+void player_move(int, double*, double*);
+void text_box(int, int);
+void goodbye_screen(void);
+
+/*****************************************************************************
+
+		TIMER FUNCTIONS
+
+*****************************************************************************/
+
+void speed_timer(...)
+{	speed++;
+}
+END_OF_FUNCTION(speed_timer);
+
+void move_timer(...)
+{	move++;
+}
+END_OF_FUNCTION(move_timer);
+
+// declare variable needed for datafile
+DATAFILE *data;
+
+/*****************************************************************************
+
+		MAIN FUNCTION
+
+*****************************************************************************/
+
+int main(int argc, char *argv[])
+{	// declare variable needed for datafile
+   char buf[80];
+
+   // set up Allegro
+   allegro_init();
+	install_timer();
+   install_mouse();
+	install_keyboard();
+
+	// seed randomizer
+   time_t t;
+   srand((unsigned) time(&t));
+
+   // load datafile into memory
+   strcpy(buf, argv[0]);
+   strcpy(get_filename(buf), "time.dat");
+   data = load_datafile(buf);
+   if (!data) // make sure datafile is loaded
+   {  allegro_exit();
+      printf("Error loading time.dat!\n\n");
+      getch();
+      return 1;
+   }
+
+   // set up graphics mode
+   set_color_depth(16);
+	set_gfx_mode(GFX_AUTODETECT, 800, 600, 0, 0);
+
+   if (speed_test() > 2400)
+   	text_box(0, 19);
+
+	char choice = 1;
+
+   while (choice)
+   {  if (choice == 1)
+      	title_screen();
+      else if (choice == 2)
+      	new_game();
+      else if (choice == 3)
+      	old_game();
+      else if (choice == 4)
+      	instructions();
+      else if (choice == 5)
+      	credits();
+
+     	choice = menu();
+   }
+
+   goodbye_screen();
+}
+
+/*****************************************************************************
+
+		SPEED_TEST FUNCTION
+
+*****************************************************************************/
+
+int speed_test()
+{  BITMAP* buffer = create_bitmap(800, 600);
+
+   set_color_depth(8);
+   BITMAP* big = create_bitmap(800, 600);
+   BITMAP* small = create_bitmap(25, 25);
+   set_color_depth(16);
+
+   LOCK_VARIABLE(speed);
+   LOCK_FUNCTION(speed_timer);
+
+   install_int(speed_timer, 5);
+
+   set_palette(black_palette);
+   for (int i = 0; i < 25; i++)
+   {  blit (big, buffer, 0, 0, 0, 0, 800, 600);
+
+      for (int j = 0; j < 100; j++)
+   		draw_sprite(buffer, small, rand() % 775, rand() % 575);
+
+      blit (buffer, screen, 0, 0, 0, 0, 800, 600);
+   }
+   clear(screen);
+   return speed * 5;
+}
+
+/*****************************************************************************
+
+		MENU FUNCTION
+
+*****************************************************************************/
+
+char menu(void)
+{  clear(screen);
+	textout_centre(screen, font, "MAIN MENU", 400, 260, 65535);
+	textout(screen, font, "1 - Title Screen", 350, 280, 65535);
+	textout(screen, font, "2 - New Game", 350, 290, 65535);
+	textout(screen, font, "3 - Continue", 350, 300, 65535);
+	textout(screen, font, "4 - Instructions", 350, 310, 65535);
+	textout(screen, font, "5 - Credits", 350, 320, 65535);
+	textout(screen, font, "0 - Quit", 350, 330, 65535);
+
+   while (!key[KEY_0])
+   {  readkey();
+   	for (int i = 1; i < 6; i++)
+      	if (key[i + 1])
+         	return i;
+   }
+
+	return 0;
+}
+
+/*****************************************************************************
+
+		TITLE_SCREN FUNCTION
+
+*****************************************************************************/
+
+void title_screen(void)
+{  BITMAP* movie = create_sub_bitmap(screen, 240, 200, 320, 200);
+	play_memory_fli(data[TITLE_FLI].dat, movie, 1, keypressed);
+}
+
+/*****************************************************************************
+
+		NEW_GAME FUNCTION
+
+*****************************************************************************/
+
+void new_game(void)
+{	game();
+}
+
+/*****************************************************************************
+
+		OLD_GAME FUNCTION
+
+*****************************************************************************/
+
+void old_game(void)
+{
+}
+
+/*****************************************************************************
+
+		INSTRUCITONS FUNCTION
+
+*****************************************************************************/
+
+void instructions(void)
+{
+}
+
+/*****************************************************************************
+
+		CREDITS FUNCTION
+
+*****************************************************************************/
+
+void credits(void)
+{
+}
+
+/*****************************************************************************
+
+		GAME FUNCTION
+
+*****************************************************************************/
+
+void game(void)
+{	clear(screen);
+
+   BITMAP* buffer = create_bitmap(800, 600);
+
+	int obj_qty, obj_x, obj_y, obj_y_old, obj_type;
+
+   int time = 0;
+	double man_x = 122;
+   double man_y = 426;
+
+   int win = FALSE;
+   int dead = FALSE;
+
+   int location = 3;
+
+   int lost_wait = 0;
+
+   LOCK_VARIABLE(move);
+	LOCK_FUNCTION(move_timer);
+
+   install_int(move_timer, 40);
+
+   while (!key[KEY_ESC] && !win && !dead)
+   {  while (move < 1);
+      move--;
+      lost_wait++;
+
+      if (move < 1)
+      {	set_palette((PALETTE)data[PAINT_PAL].dat);
+	   	blit((BITMAP*)data[MAP0_BMP + time].dat, buffer, 0, 0, 0, 0, 800, 600);
+
+	   	obj_y_old = -100;
+   		sscanf((char*)data[OBJECT0_TXT + time].dat, "%d", &obj_qty);
+   		for (int i = 0; i < obj_qty; i++)
+			{	sscanf((char*)data[OBJECT0_TXT + time].dat + 5 + i * 11, "%d %d %d",
+					&obj_x, &obj_y, &obj_type);
+         	if (man_y + 25 >= obj_y_old && man_y + 25 <= obj_y)
+					draw_sprite(buffer, (BITMAP*)data[MAN_BMP].dat, (int) man_x,
+						(int) man_y);
+         	obj_y_old = obj_y;
+				draw_sprite(buffer, (BITMAP*)data[SPRITE0_BMP + obj_type].dat, (int)
+					obj_x, (int) (obj_y - HEIGHT[obj_type]));
+   		}
+      	if (man_y + 25 >= obj_y)
+				draw_sprite(buffer, (BITMAP*)data[MAN_BMP].dat, (int) man_x, (int)
+					man_y);
+
+      	blit(buffer, screen, 0, 0, 0, 0, 800, 600);
+      }
+
+      location = new_area(location, time, man_x, man_y);
+
+      if (location == 9 && time == 0)
+      	dead = TRUE;
+
+		else if (getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)man_x + 6,
+				(int)man_y + 25) == 6 && time == 0)
+      {	// hole in mound
+      	text_box(time, 17);
+         win = TRUE;
+      }
+		else if (getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)man_x + 6,
+				(int)man_y + 25) == 13 && time == 0)
+      {	// hermit's cave
+      	text_box(time, 18);
+         man_x = 605;
+         man_y = 440;
+		}
+
+      if (location == 14 && rand() % 1001 > 995 && lost_wait > 40 && time == 0)
+      {	// lost in forest
+      	text_box(time, 14);
+         lost_wait = 0;
+         do
+         {	man_x = rand() % 800;
+         	man_y = rand() % 600;
+			} while (getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)man_x + 6,
+				(int)man_y + 25) != 14);
+		}
+
+      player_move(time, &man_x, &man_y);
+   }
+
+   if (dead)
+   	text_box(time, 15);
+   else if (win)
+   	text_box(time, 16);
+}
+
+/*****************************************************************************
+
+		NEW_AREA FUNCTION
+
+*****************************************************************************/
+
+int new_area(int location, int time, double man_x, double man_y)
+{	if (location == 3 && getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)man_x
+			+ 6, (int)man_y + 25) == 14)
+   {  // normal to forest
+   	text_box(time, 0);
+    	return 14;
+   }
+	else if (location == 3 && getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)
+			man_x + 6, (int)man_y + 25) == 5)
+   {  // normal to path
+	  	text_box(time, 1);
+     	return 5;
+   }
+
+	else if (location == 14 && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)man_x + 6, (int)man_y + 25) == 3)
+   {  // forest to normal
+     	text_box(time, 2);
+      return 3;
+   }
+	else if (location == 14 && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)man_x + 6, (int)man_y + 25) == 5)
+   {  // forest to path
+     	text_box(time, 3);
+      return 5;
+   }
+	else if (location == 14 && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)man_x + 6, (int)man_y + 25) == 9)
+   {	// forest to sling
+      text_box(time, 4);
+      return 9;
+   }
+	else if (location == 14 && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)man_x + 6, (int)man_y + 25) == 12)
+   {  // forest to behind
+     	text_box(time, 5);
+      return 12;
+   }
+
+	else if (location == 5 && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)man_x + 6, (int)man_y + 25) == 3)
+   {  // path to normal
+   	text_box(time, 6);
+      return 3;
+   }
+	else if (location == 5 && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)man_x + 6, (int)man_y + 25) == 14)
+   {  // path to forest
+    	text_box(time, 7);
+      return 14;
+   }
+	else if (location == 5 && getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)
+			man_x + 6, (int)man_y + 25) == 9)
+   {  // path to sling
+     	text_box(time, 8);
+      return 9;
+   }
+
+   // insert sling stuff here
+
+	else if (location == 12 && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)man_x + 6, (int)man_y + 25) == 14)
+   {  // behind to forest
+     	text_box(time, 12);
+      return 14;
+   }
+	else if (location == 12 && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)man_x + 6, (int)man_y + 25) == 9)
+   {  // behind to sling
+     	text_box(time, 13);
+      return 9;
+   }
+   else
+   	return location;
+
+}
+
+/*****************************************************************************
+
+		PLAYER_MOVE FUNCTION
+
+*****************************************************************************/
+
+void player_move(int time, double* man_x, double* man_y)
+{	if (((key[KEY_RIGHT] && key[KEY_DOWN]) || key[KEY_PGDN]) &&
+			getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)(*man_x + 6 +
+			0.7071), (int)(*man_y + 25 + 0.7071)))
+   {	*man_x += 0.7071; // faster than sqrt(0.5)
+      *man_y += 0.7071;
+   }
+	else if (((key[KEY_RIGHT] && key[KEY_UP]) || key[KEY_PGUP]) &&
+			getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)(*man_x + 6 +
+			0.7071), (int)(*man_y + 25 - 0.7071)))
+   {	*man_x += 0.7071; // faster than sqrt(0.5)
+      *man_y -= 0.7071;
+   }
+	else if (((key[KEY_LEFT] && key[KEY_DOWN]) || key[KEY_END]) &&
+			getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)(*man_x + 6 -
+			0.7071), (int)(*man_y + 25 + 0.7071)))
+   {	*man_x -= 0.7071; // faster than sqrt(0.5)
+      *man_y += 0.7071;
+   }
+	else if (((key[KEY_LEFT] && key[KEY_UP]) || key[KEY_HOME]) &&
+			getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)(*man_x + 6 -
+			0.7071), (int)(*man_y + 25 - 0.7071)))
+   {	*man_x -= 0.7071; // faster than sqrt(0.5)
+      *man_y -= 0.7071;
+   }
+	else if ((key[KEY_RIGHT]) && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)(*man_x + 6 + 1), (int)(*man_y + 25)))
+   	*man_x += 1.0;
+	else if ((key[KEY_LEFT]) && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)(*man_x + 6 - 1), (int)(*man_y + 25)))
+   	*man_x -= 1.0;
+	else if ((key[KEY_DOWN]) && getpixel((BITMAP*)data[WALK0_BMP + time].dat,
+			(int)(*man_x + 6), (int)(*man_y + 25 + 1)))
+   	*man_y += 1.0;
+	else if ((key[KEY_UP]) && getpixel((BITMAP*)data[WALK0_BMP + time].dat, (int)
+			(*man_x + 6), (int)(*man_y + 25 - 1)))
+   	*man_y -= 1.0;
+}
+/*****************************************************************************
+
+		TEXT_BOX FUNCTION
+
+*****************************************************************************/
+
+void text_box(int time, int event)
+{  BITMAP* box = create_sub_bitmap(screen, 200, 200, 400, 200);
+   BITMAP* back = create_bitmap(400, 200);
+   BITMAP* buffer = create_bitmap(400, 200);
+   blit (box, back, 0, 0, 0, 0, 400, 200);
+
+	set_color_depth(8);
+	BITMAP* stretch = create_bitmap(400, 200);
+   set_color_depth(16);
+
+   set_palette((PALETTE)data[BOX0_PAL + time].dat);
+   for (int i = 1; i <= 200; i += 4)
+	{	stretch_blit((BITMAP*)data[BOX0_BMP + time].dat, stretch, 0, 0, 400, 200,
+			(int)(200 - i), (int)(100 - i / 2), (int)(2 * i), (int)(i));
+      blit(stretch, box, 200 - i, 100 - i / 2, 200 - i, 100 - i / 2, 2 * i, i);
+		rest(1);
+   }
+
+   int line = 0;
+   int element = 0;
+   int column = 20;
+   int skip = FALSE;
+   int quit = FALSE;
+   char word[20];
+
+   set_palette((PALETTE)data[GREY_PAL].dat);
+   text_mode(-1);
+
+   rest(200);
+   clear_keybuf();
+
+   do
+   {	sscanf((char*)data[EVENT000_TXT + event].dat + element, "%s", word);
+
+   	if (column + text_length((FONT*)data[GOTHIC_FONT].dat, word) > 380)
+      {	line++;
+      	column = 20;
+      }
+      else if (strchr(word, 'ª') || strchr(word, 'œ'))
+      {  clear_keybuf();
+			rest(200);
+         while (!key[KEY_ENTER] && !key[KEY_ESC] && !skip && !quit);
+         if (key[KEY_ESC])
+				quit = TRUE;
+        	clear_keybuf();
+
+      	line += 2;
+         column = 20;
+         skip = FALSE;
+       	element += strlen(word) + 2;
+      }
+      else
+		{	textout(box, (FONT*)data[GOTHIC_FONT].dat, word, column, 15 * line +
+				20, -1);
+         element += strlen(word) + 1;
+         column += text_length((FONT*)data[GOTHIC_FONT].dat, word) + 12;
+
+         if (keypressed())
+         {	int kp = readkey() >> 8;
+         	if (kp == KEY_ENTER)
+         		skip = TRUE;
+            else if (kp = KEY_ESC)
+            	quit = TRUE;
+         }
+
+         if (!skip && !quit)
+         	rest(200);
+      }
+	} while (!strchr(word, 'œ') && !quit);
+
+   rest(200);
+
+   set_palette((PALETTE)data[BOX0_PAL + time].dat);
+   for (int i = 200; i >= 1; i -= 4)
+   {  blit (back, buffer, 0, 0, 0, 0, 400, 200);
+		stretch_blit((BITMAP*)data[BOX0_BMP + time].dat, stretch, 0, 0, 400, 200,
+			200 - i, 100 - i / 2, 2 * i, i);
+		blit(stretch, buffer, 200 - i, 100 - i / 2, 200 - i, 100 - i / 2, 2 * i,
+			i);
+      blit(buffer, box, 0, 0, 0, 0, 400, 200);
+		rest(1);
+   }
+
+   clear_keybuf();
+}
+
+/*****************************************************************************
+
+		GOODBYE_SCREEN FUNCTION
+
+*****************************************************************************/
+
+void goodbye_screen(void)
+{  clear(screen);
+	textout_centre(screen, font, "Thank you for playing Time Travel", 400, 300,
+		65535);
+	readkey();
+}

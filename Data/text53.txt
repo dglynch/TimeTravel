@@ -1,0 +1,3 @@
+Design & Programming by Dan Lynch. ª
+Graphics by Dan Lynch, Jon Courcelles & Steve King. ª
+Game Library is Allegro 3.11 by Shawn Hargreaves. œ
